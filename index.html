@@ -14,6 +14,7 @@
 </script>
   
 
+
   
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -702,6 +703,128 @@
 </div>
 
 <script>
+  /* ================= Web Audio API 跨手機音效引擎 ================= */
+  let audioCtx = null;
+
+  function initAudio() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+  }
+
+  // 解鎖手機瀏覽器自動播放限制 (User Gesture Requirement)
+  window.addEventListener('touchstart', initAudio, { once: true });
+  window.addEventListener('click', initAudio, { once: true });
+
+  // 1. 按鈕音效 - 開始 (開朗雙和弦提示音)
+  function playSoundStart() {
+    initAudio();
+    if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+    [523.25, 659.25, 783.99].forEach((freq, i) => { // C5, E5, G5
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, now + i * 0.06);
+      gain.gain.setValueAtTime(0.15, now + i * 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.18);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now + i * 0.06);
+      osc.stop(now + i * 0.06 + 0.18);
+    });
+  }
+
+  // 2. 按鈕音效 - 暫停 / 繼續 (木質叩擊聲)
+  function playSoundRest() {
+    initAudio();
+    if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(isResting ? 320 : 480, now);
+    osc.frequency.exponentialRampToValueAtTime(120, now + 0.08);
+    gain.gain.setValueAtTime(0.2, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.08);
+  }
+
+  // 3. 按鈕音效 - 完成紀錄 (成功終結三和弦)
+  function playSoundStop() {
+    initAudio();
+    if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+    [440, 554.37, 659.25, 880].forEach((freq, i) => { // A4, C#5, E5, A5
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + i * 0.08);
+      gain.gain.setValueAtTime(0.18, now + i * 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.35);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now + i * 0.08);
+      osc.stop(now + i * 0.08 + 0.35);
+    });
+  }
+
+  // 4. 行走腳步聲 (泥土/靴子腳步輕微噪訊音)
+  function playSoundStep() {
+    if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+    
+    // 生成短噪音模擬腳步聲
+    const bufferSize = audioCtx.sampleRate * 0.04;
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(350 + Math.random() * 100, now);
+    filter.Q.setValueAtTime(1.8, now);
+
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.08, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioCtx.destination);
+    noise.start(now);
+  }
+
+  // 5. 讀秒音效 (與總表 tick 每秒同步之機械卡嗒聲)
+  function playSoundTick() {
+    if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(1200, now);
+    osc.frequency.exponentialRampToValueAtTime(400, now + 0.015);
+    gain.gain.setValueAtTime(0.05, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.015);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.015);
+  }
+
+  /* ============================================================= */
+
   const stations = [
     "Oviedo", "Grado", "Salas", "Tineo", "Borres",
     "La Mesa", "Grandas de Salime", "A Fonsagrada",
@@ -709,7 +832,6 @@
     "O Pedrouzo", "Santiago"
   ];
 
-  // 清除舊無效格式紀錄並載入合法紀錄
   let records = [];
   try {
     const raw = JSON.parse(localStorage.getItem('camino_records') || '[]');
@@ -761,6 +883,7 @@
 
   function togglePicker(type) {
     if (isTiming) return;
+    initAudio();
     const startCard = document.getElementById('startPickerCard');
     const endCard = document.getElementById('endPickerCard');
 
@@ -860,6 +983,8 @@
 
   function startTimer() {
     if (!selectedStart || !selectedEnd) return;
+    playSoundStart(); // 播放「開始」音效
+
     isTiming = true; isResting = false;
     startTime = new Date(); totalPauseTime = 0;
 
@@ -871,7 +996,12 @@
     document.getElementById('btnRest').disabled = false;
 
     document.getElementById('pixelStage').classList.add('anim-running');
-    spriteInterval = setInterval(() => { spriteFrame++; drawWalker('WALK', spriteFrame); }, 250);
+    spriteInterval = setInterval(() => { 
+      spriteFrame++; 
+      drawWalker('WALK', spriteFrame); 
+      if (!isResting) playSoundStep(); // 行走音效
+    }, 250);
+
     timerInterval = setInterval(tick, 1000);
   }
 
@@ -894,9 +1024,13 @@
     prevStr = str;
 
     document.getElementById('restClock').innerText = fmtMS(currentRest);
+
+    playSoundTick(); // 讀秒音效 (與總表同步每秒觸發)
   }
 
   function toggleRest() {
+    playSoundRest(); // 播放「暫停/繼續」音效
+
     const stage = document.getElementById('pixelStage');
     const btnRest = document.getElementById('btnRest');
 
@@ -912,13 +1046,19 @@
       isResting = false;
       totalPauseTime += (new Date() - restStartTime);
       stage.classList.add('anim-running');
-      spriteInterval = setInterval(() => { spriteFrame++; drawWalker('WALK', spriteFrame); }, 250);
+      spriteInterval = setInterval(() => { 
+        spriteFrame++; 
+        drawWalker('WALK', spriteFrame); 
+        if (!isResting) playSoundStep(); 
+      }, 250);
       btnRest.classList.remove('resting');
       btnRest.innerText = 'PAUSE / REST';
     }
   }
 
   function stopTimer() {
+    playSoundStop(); // 播放「完成」音效
+
     const endTime = new Date();
     if (isResting) totalPauseTime += (endTime - restStartTime);
 
@@ -1004,6 +1144,7 @@
   }
 
   function deleteSelected() {
+    initAudio();
     const chks = document.querySelectorAll('.del-chk:checked');
     const ids = Array.from(chks).map(c => Number(c.value));
     records = records.filter(r => !ids.includes(r.id));
