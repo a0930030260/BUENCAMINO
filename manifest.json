@@ -7,9 +7,9 @@
   "theme_color": "#AA151B",
   "icons": [
     {
-      "src": "https://www.flaticon.com/free-icon/camino-de-santiago_6938472?term=camino&page=1&position=1&origin=search&related_id=6938472",
-      "sizes": "192x192",
-      "type": "image/png"
+      "src": "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjEwIiByeT0iMTAiIGZpbGw9IiMxOTUxOUQiIC8+CiAgPHBhdGggZD0iTSA1IDUwIEwgMTggNDMgTCAyNSAyMCBMIDU1IDUgTCA4MCwyMCBMIDk1IDUwIEwgODAgODAgTCA1NSA5NSBMIDI1IDgwIEwgMTggNTcgWiIgZmlsbD0iI0RDQjM0QiIgLz4KICA8ZyBzdHJva2U9IiNEQ0IzNEIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KICAgIDxsaW5lIHgxPSI1MCIgeTE9IjUiIHgyPSI5NSIgeTI9IjUwIiAvPgogICAgPGxpbmUgeDE9IjI1IiB5MT0iMjAiIHgyPSI5NSIgeTI9IjUwIiAvPgogICAgPGxpbmUgeDE9IjE4IiB5MT0iNDMiIHgyPSI5NSIgeTI9IjUwIiAvPgogICAgPGxpbmUgeDE9IjE4IiB5MT0iNTciIHgyPSI5NSIgeTI9IjUwIiAvPgogICAgPGxpbmUgeDE9IjI1IiB5MT0iODAiIHgyPSI5NSIgeTI9IjUwIiAvPgogICAgPGxpbmUgeDE9IjU1IiB5MT0iOTUiIHgyPSI5NSIgeTI9IjUwIiAvPgogICAgPGxpbmUgeDE9IjgwIiB5MT0iODAiIHgyPSI5NSIgeTI9IjUwIiAvPgogICAgPGxpbmUgeDE9IjgwIiB5MT0iMjAiIHgyPSI5NSIgeTI9IjUwIiAvPgogIDwvZz4KPC9zdmc+Cg==",
+      "sizes": "any",
+      "type": "image/svg+xml"
     }
   ]
 }
